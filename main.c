@@ -70,6 +70,10 @@ int main(void) {
     }
     printf("\n");
 
+    int decrypted_bit = decrypt(ciphertext, secret_key, N, q);
+    printf("\nDecrypted bit: %d\n", decrypted_bit);
+
+
     // clean up dynamically allocated memory
     free_matrix(lattice, n);
     free(secret_key);

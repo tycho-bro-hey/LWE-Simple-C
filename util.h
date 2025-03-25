@@ -50,4 +50,6 @@ int** generate_pk(int **lattice, int n, int N, int *secret_key, int *uniform_vec
 
 int* encrypt(int **public_key, int n, int N, int message_bit, int s, int q);
 
+int decrypt(int *ciphertext, int *secret_key, int N, int q);
+
 #endif /* UTIL_H */
