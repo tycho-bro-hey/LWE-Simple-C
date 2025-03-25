@@ -1,5 +1,5 @@
-#ifndef KEY_GEN_H
-#define KEY_GEN_H
+#ifndef UTIL_H
+#define UTIL_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,4 +48,6 @@ int* matrix_vector_multiply(int **matrix, int n, int N, int *vector);
  */
 int** generate_pk(int **lattice, int n, int N, int *secret_key, int *uniform_vector);
 
-#endif /* KEY_GEN_H */
+int* encrypt(int **public_key, int n, int N, int message_bit, int s, int q);
+
+#endif /* UTIL_H */

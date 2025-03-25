@@ -1,4 +1,4 @@
-#include "key_gen.h"
+#include "util.h"
 #include <time.h>  
 
 int randomUniformInt(int s) {

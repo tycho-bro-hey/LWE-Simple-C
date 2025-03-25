@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "key_gen.h"
+#include "util.h"
 #include <time.h>
 
 int main(void) {
@@ -60,11 +60,22 @@ int main(void) {
         }
         printf("\n");
     }
+
+    int message = 1; // Message to encrypt
+    int* ciphertext = encrypt(public_key, n, N, message, s, q);
+
+    printf("\nCiphertext (encrypted message %d):\n", message);
+    for (int i = 0; i < N + 1; i++) {
+        printf("%d ", ciphertext[i]);
+    }
+    printf("\n");
+
     // clean up dynamically allocated memory
     free_matrix(lattice, n);
     free(secret_key);
     free(error_vector);
     free_matrix(public_key, n);
+    free(ciphertext);
 
     return 0;
 }
