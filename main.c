@@ -9,7 +9,7 @@ int main(void) {
     // Dimensions for the lattice and vectors.
     int n = 4;      // mumber of rows in the lattice, and length of the error vector.
     int N = 4;      // mumber of columns in the lattice, and length of the secret key.
-    int q = 1024;   // modulus for ciphertext space.
+    int q = 4096;   // modulus for ciphertext space.
     int s = 1;      // parameter for randomUniformInt --> this should be a discrete Gaussian.
 
     // Create an n x N lattice with entries centered mod q.
@@ -27,7 +27,7 @@ int main(void) {
     }
 
     // use generate_pk to concatenate the combined vector to the original lattice.
-    int **public_key = generate_pk(lattice, n, N, secret_key, error_vector);
+    int **public_key = generate_pk(lattice, n, N, secret_key, error_vector, q);
 
     // print the lattice
     printf("Random %d x %d lattice (values centered mod %d):\n", n, N, q);
@@ -74,6 +74,15 @@ int main(void) {
     printf("\nDecrypted bit: %d\n", decrypted_bit);
 
 
+    for (int test = 0; test < 10; test++) {
+        int message = test % 2; // Alternate between 0 and 1
+        int* ciphertext = encrypt(public_key, n, N, message, s, q);
+        int decrypted = decrypt(ciphertext, secret_key, N, q);
+        printf("Original: %d, Decrypted: %d %s\n", message, decrypted,
+               message == decrypted ? "Correct" : "Incorrect");
+        free(ciphertext);
+    }
+    
     // clean up dynamically allocated memory
     free_matrix(lattice, n);
     free(secret_key);

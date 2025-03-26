@@ -1,19 +1,22 @@
 #include "util.h"
-#include <time.h>  
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
+// Returns a random integer uniformly sampled from [-s, s]
 int randomUniformInt(int s) {
     int range = 2 * s + 1;
     return (rand() % range) - s;
 }
 
-int mod_q(int q) {
-    int r = rand() % q;
-    if (2 * r >= q) {
-        r -= q;
-    }
-    return r;
+// Returns a random integer modulo q, centered in [-q/2, q/2)
+int reduce_mod_q(int value, int q) {
+    int r = value % q;
+    if (r < 0) r += q;
+    return r - (q / 2);
 }
 
+// Allocates and returns an n x N matrix filled with centered mod-q values
 int** generate_lattice(int n, int N, int q) {
     int **matrix = malloc(n * sizeof(int *));
     if (matrix == NULL) {
@@ -27,7 +30,7 @@ int** generate_lattice(int n, int N, int q) {
             exit(EXIT_FAILURE);
         }
         for (int j = 0; j < N; j++) {
-            matrix[i][j] = mod_q(q);
+            matrix[i][j] = reduce_mod_q(rand(), q);
         }
     }
     return matrix;
@@ -52,7 +55,7 @@ int* generate_sk(int N) {
     return vector;
 }
 
-int* matrix_vector_multiply(int **matrix, int n, int N, int *vector) {
+int* matrix_vector_multiply(int **matrix, int n, int N, int *vector, int q) {
     int *result = malloc(n * sizeof(int));
     if (result == NULL) {
         perror("Failed to allocate memory for the result vector");
@@ -63,28 +66,36 @@ int* matrix_vector_multiply(int **matrix, int n, int N, int *vector) {
         for (int j = 0; j < N; j++) {
             result[i] += matrix[i][j] * vector[j];
         }
+        result[i] = reduce_mod_q(result[i], q);  // ← Add this
     }
     return result;
 }
 
-int** generate_pk(int **lattice, int n, int N, int *secret_key, int *uniform_vector) {
-    int *mv_result = matrix_vector_multiply(lattice, n, N, secret_key);
-    int **new_matrix = malloc(n * sizeof(int *));
-    if (new_matrix == NULL) {
-        perror("Failed to allocate memory for new matrix rows");
+
+// Generates the public key matrix: [P | P·s + e]
+int** generate_pk(int **P, int n, int N, int *secret_key, int *error_vector, int q) {
+    int *Ps = matrix_vector_multiply(P, n, N, secret_key, q);
+
+    int **public_key = malloc(n * sizeof(int *));
+    if (public_key == NULL) {
+        perror("Failed to allocate memory for public key rows");
         exit(EXIT_FAILURE);
     }
+
     for (int i = 0; i < n; i++) {
-        new_matrix[i] = malloc((N + 1) * sizeof(int));
-        if (new_matrix[i] == NULL) {
-            perror("Failed to allocate memory for new matrix columns");
+        public_key[i] = malloc((N + 1) * sizeof(int));
+        if (public_key[i] == NULL) {
+            perror("Failed to allocate memory for public key columns");
             exit(EXIT_FAILURE);
         }
+
         for (int j = 0; j < N; j++) {
-            new_matrix[i][j] = lattice[i][j];
+            public_key[i][j] = reduce_mod_q(P[i][j], q);
         }
-        new_matrix[i][N] = mv_result[i] + uniform_vector[i];
+
+        public_key[i][N] = reduce_mod_q(Ps[i] + error_vector[i], q);
     }
-    free(mv_result);
-    return new_matrix;
+
+    free(Ps);
+    return public_key;
 }
