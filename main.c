@@ -9,10 +9,10 @@ int main(void) {
     srand((unsigned int)time(NULL));
 
     // Lattice and encryption parameters
-    int n = 4;
-    int N = 8;
+    int n = 256;
+    int N = 256;
     int q = 4096;
-    int s = 0;         // noise bound
+    int s = 1;         // noise bound
     int t = 16;        // message modulus
 
     // Generate lattice P, secret key s, and error vector e
