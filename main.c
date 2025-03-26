@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "util.h"
 #include <time.h>
+#include "keygen.h"
+
 
 int main(void) {
     // Seed the random number generator.
