@@ -5,15 +5,15 @@
 #include "keygen.h"
 
 int main(void) {
-    // Seed the random number generator
+    // seed the random number generator
     srand((unsigned int)time(NULL));
 
-    // Lattice and encryption parameters
+    // LWE parameters
     int n = 256;
     int N = 256;
     int q = 4096;
-    int s = 1;         // noise bound
-    int t = 16;        // message modulus
+    int s = 1;     
+    int t = 16;        
 
     // Generate lattice P, secret key s, and error vector e
     int **lattice = generate_lattice(n, N, q);
@@ -43,7 +43,7 @@ int main(void) {
     for (int i = 0; i < N; i++) printf("%d", secret_key[i]);
     printf(")\n\n");
 
-    // Test messages
+    // test messages
     int test_messages[] = {0, 3, 6};
     int num_tests = sizeof(test_messages) / sizeof(test_messages[0]);
 
@@ -58,7 +58,7 @@ int main(void) {
         free(ciphertext);
     }
 
-    // Clean up
+
     free_matrix(lattice, n);
     free_matrix(public_key, n);
     free(secret_key);
