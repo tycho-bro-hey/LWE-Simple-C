@@ -36,8 +36,8 @@ void free_matrix(int **matrix, int n);
  */
 int* matrix_vector_multiply(int **matrix, int n, int N, int *vector, int q);
 
-int* encrypt(int **public_key, int n, int N, int message_bit, int s, int q);
+int* encrypt(int **public_key, int n, int N, int message, int t, int s, int q);
 
-int decrypt(int *ciphertext, int *secret_key, int N, int q);
+int decrypt(int *ciphertext, int *secret_key, int N, int t, int q);
 
 #endif /* UTIL_H */

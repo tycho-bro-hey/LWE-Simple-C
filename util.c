@@ -12,8 +12,9 @@ int randomUniformInt(int s) {
 // Returns a random integer modulo q, centered in [-q/2, q/2)
 int reduce_mod_q(int value, int q) {
     int r = value % q;
-    if (r < 0) r += q;
-    return r - (q / 2);
+    if (r < 0) r += q;          // bring to [0, q)
+    if (r >= q / 2) r -= q;     // center to [-q/2, q/2)
+    return r;
 }
 
 // Allocates and returns an n x N matrix filled with centered mod-q values

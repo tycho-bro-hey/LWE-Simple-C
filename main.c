@@ -1,96 +1,68 @@
 #include <stdio.h>
-#include "util.h"
+#include <stdlib.h>
 #include <time.h>
+#include "util.h"
 #include "keygen.h"
 
-
 int main(void) {
-    // Seed the random number generator.
+    // Seed the random number generator
     srand((unsigned int)time(NULL));
 
-    // Dimensions for the lattice and vectors.
-    int n = 4;      // mumber of rows in the lattice, and length of the error vector.
-    int N = 4;      // mumber of columns in the lattice, and length of the secret key.
-    int q = 4096;   // modulus for ciphertext space.
-    int s = 1;      // parameter for randomUniformInt --> this should be a discrete Gaussian.
+    // Lattice and encryption parameters
+    int n = 4;
+    int N = 8;
+    int q = 4096;
+    int s = 0;         // noise bound
+    int t = 16;        // message modulus
 
-    // Create an n x N lattice with entries centered mod q.
+    // Generate lattice P, secret key s, and error vector e
     int **lattice = generate_lattice(n, N, q);
-    // Generate a random secret key vector of length N.
     int *secret_key = generate_sk(N);
-    // Create a uniform vector of length n using randomUniformInt.
     int *error_vector = malloc(n * sizeof(int));
-    if (error_vector == NULL) {
-        perror("Failed to allocate memory for the uniform vector");
+    if (!error_vector) {
+        perror("Failed to allocate error vector");
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i < n; i++) {
         error_vector[i] = randomUniformInt(s);
     }
 
-    // use generate_pk to concatenate the combined vector to the original lattice.
+    // Generate public key: [P | P·s + e]
     int **public_key = generate_pk(lattice, n, N, secret_key, error_vector, q);
 
-    // print the lattice
-    printf("Random %d x %d lattice (values centered mod %d):\n", n, N, q);
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < N; j++) {
-            printf("%3d ", lattice[i][j]);
-        }
-        printf("\n");
+    // Print secret key
+    printf("Secret key:\n");
+    for (int i = 0; i < N; i++) {
+        printf("%d ", secret_key[i]);
     }
+    printf("\n\n");
 
-    // print the secret key vector
-    printf("\nSecret key vector of length %d:\n", N);
-    for (int j = 0; j < N; j++) {
-        printf("%d ", secret_key[j]);
-    }
-    printf("\n");
+    int weight = 0;
+    for (int i = 0; i < N; i++) weight += secret_key[i];
+    printf("Secret key weight: %d (", weight);
+    for (int i = 0; i < N; i++) printf("%d", secret_key[i]);
+    printf(")\n\n");
 
-    // print the sampled error vector
-    printf("\nSampled error vector of length %d (sampled from randomUniformInt with s = %d):\n", n, s);
-    for (int i = 0; i < n; i++) {
-        printf("%d ", error_vector[i]);
-    }
-    printf("\n");
+    // Test messages
+    int test_messages[] = {0, 3, 6};
+    int num_tests = sizeof(test_messages) / sizeof(test_messages[0]);
 
-    // print the public key
-    printf("\nPublic key:\n");
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < N + 1; j++) {
-            printf("%3d ", public_key[i][j]);
-        }
-        printf("\n");
-    }
+    for (int i = 0; i < num_tests; i++) {
+        int m = test_messages[i];
+        int *ciphertext = encrypt(public_key, n, N, m, t, s, q);
+        int decrypted = decrypt(ciphertext, secret_key, N, t, q);
 
-    int message = 1; // Message to encrypt
-    int* ciphertext = encrypt(public_key, n, N, message, s, q);
+        printf("Original: %2d | Decrypted: %2d %s\n", m, decrypted,
+               m == decrypted ? "correct" : "incorrect");
 
-    printf("\nCiphertext (encrypted message %d):\n", message);
-    for (int i = 0; i < N + 1; i++) {
-        printf("%d ", ciphertext[i]);
-    }
-    printf("\n");
-
-    int decrypted_bit = decrypt(ciphertext, secret_key, N, q);
-    printf("\nDecrypted bit: %d\n", decrypted_bit);
-
-
-    for (int test = 0; test < 10; test++) {
-        int message = test % 2; // Alternate between 0 and 1
-        int* ciphertext = encrypt(public_key, n, N, message, s, q);
-        int decrypted = decrypt(ciphertext, secret_key, N, q);
-        printf("Original: %d, Decrypted: %d %s\n", message, decrypted,
-               message == decrypted ? "Correct" : "Incorrect");
         free(ciphertext);
     }
-    
-    // clean up dynamically allocated memory
+
+    // Clean up
     free_matrix(lattice, n);
+    free_matrix(public_key, n);
     free(secret_key);
     free(error_vector);
-    free_matrix(public_key, n);
-    free(ciphertext);
 
     return 0;
 }
