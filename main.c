@@ -4,6 +4,7 @@
 #include "util.h"
 #include "keygen.h"
 #include "lwe_crypto.h"
+#include "lwe_operations.h"
 
 int main(void) {
     // seed the random number generator
@@ -14,7 +15,7 @@ int main(void) {
     int N = 256;
     int q = 4096;
     int s = 1;     
-    int t = 16;        
+    int t = 32;        
 
     // Generate lattice P, secret key s, and error vector e
     int **lattice = generate_lattice(n, N, q);
@@ -59,6 +60,41 @@ int main(void) {
         free(ciphertext);
     }
 
+    // test LWE operations
+    printf("\n--- Homomorphic Addition Test ---\n");
+    int m1 = 3, m2 = 5;
+    int *ct1 = encrypt(public_key, n, N, m1, t, s, q);
+    int *ct2 = encrypt(public_key, n, N, m2, t, s, q);
+
+    int *ct_sum = malloc((N + 1) * sizeof(int));
+    homomorphic_add(ct_sum, ct1, ct2, N + 1, q);
+
+    int dec_sum = decrypt(ct_sum, secret_key, N, t, q);
+
+    printf("m1 = %d, m2 = %d, expected sum = %d, decrypted = %d %s\n",
+           m1, m2, (m1 + m2) % t, dec_sum,
+           ((m1 + m2) % t == dec_sum) ? "correct" : "incorrect");
+
+    free(ct1);
+    free(ct2);
+    free(ct_sum);
+
+    printf("\n--- Homomorphic Scalar Multiplication Test ---\n");
+    int m = 4;
+    int scalar = 3;
+    int *ct = encrypt(public_key, n, N, m, t, s, q);
+
+    int *ct_scaled = malloc((N + 1) * sizeof(int));
+    homomorphic_scalar_mult(ct_scaled, ct, scalar, N + 1, q);
+
+    int dec_scaled = decrypt(ct_scaled, secret_key, N, t, q);
+
+    printf("m = %d, scalar = %d, expected product = %d, decrypted = %d %s\n",
+           m, scalar, (m * scalar) % t, dec_scaled,
+           ((m * scalar) % t == dec_scaled) ? "correct" : "incorrect");
+
+    free(ct);
+    free(ct_scaled);
 
     free_matrix(lattice, n);
     free_matrix(public_key, n);
