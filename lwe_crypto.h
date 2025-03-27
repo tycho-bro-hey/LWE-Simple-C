@@ -1,5 +1,5 @@
-#ifndef ENCRYPTION_H
-#define ENCRYPTION_H
+#ifndef LWE_CRYPTO_H
+#define LWE_CRYPTO_H
 
 // Encrypts integer message m ∈ Z_t
 int* encrypt(int **public_key, int n, int N, int message, int t, int s, int q);
@@ -7,4 +7,4 @@ int* encrypt(int **public_key, int n, int N, int message, int t, int s, int q);
 // Decrypts ciphertext and returns integer message m ∈ Z_t
 int decrypt(int *ciphertext, int *secret_key, int N, int t, int q);
 
-#endif // ENCRYPTION_H
+#endif 

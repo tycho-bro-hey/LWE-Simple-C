@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "util.h"
+#include "lwe_crypto.h"
 
 // Encrypts an integer message (m ∈ Z_t) using an LWE-style public key.
 // public_key: an n x (N+1) matrix (last column is b = pk*s + e)
