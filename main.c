@@ -3,6 +3,7 @@
 #include <time.h>
 #include "util.h"
 #include "keygen.h"
+#include "lwe_crypto.h"
 
 int main(void) {
     // seed the random number generator
