@@ -60,3 +60,28 @@ int* matrix_vector_multiply(int **matrix, int n, int N, int *vector, int q) {
     }
     return result;
 }
+
+int* kroneckerProduct(const int *A, int m, int n,
+    const int *B, int p, int q) {
+int mp = m * p;
+int nq = n * q;
+int *C = malloc(mp * nq * sizeof(int));
+if (C == NULL) {
+fprintf(stderr, "Memory allocation error in kroneckerProduct.\n");
+exit(EXIT_FAILURE);
+}
+
+for (int i = 0; i < m; i++) {
+for (int j = 0; j < n; j++) {
+for (int k = 0; k < p; k++) {
+for (int l = 0; l < q; l++) {
+  int a_ij = A[i * n + j];
+  int b_kl = B[k * q + l];
+  C[(i * p + k) * nq + (j * q + l)] = a_ij * b_kl;
+}
+}
+}
+}
+
+return C;
+}

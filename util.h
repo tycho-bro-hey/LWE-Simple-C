@@ -9,6 +9,7 @@ int randomUniformInt(int s);
 
 int mod_q(int q);
 int reduce_mod_q(int value, int q);
+int* kroneckerProduct(const int *A, int m, int n, const int *B, int p, int q);
 
 int** generate_lattice(int n, int N, int q);
 void free_matrix(int **matrix, int n);
